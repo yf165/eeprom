@@ -1,10 +1,12 @@
 #ifndef EEPROM_H
 #define EEPROM_H
+#define MAXWRITENUMONCE 4
+#define INTERVALOFBLOCKWR 100*1000 //us
 // 写入的结构体
 struct i2c_at24_w
 {
     unsigned char addr;
-    unsigned char wdata[8];
+    unsigned char wdata[MAXWRITENUMONCE];
 };
 // 读出的结构体
 struct i2c_at24_r
@@ -16,5 +18,6 @@ struct i2c_at24_r
 
 int openEep(const char*);
 int readEep(int fd,int devAddr,int regAddr,int num);
+int writeEep(int fd,int devAddr,int regAddr,const unsigned char *writeContent, int num);
 int closeEep(int fd);
 #endif

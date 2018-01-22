@@ -21,7 +21,6 @@ int readEep(int fd,int devAddr,int regAddr,int num)
 	char c = 0;
 	struct i2c_msg  msg;
     struct i2c_at24_r rd = {0};
-    struct i2c_at24_w wd = {0};
     struct i2c_rdwr_ioctl_data ioctl_data;
     struct i2c_msg msgs;
 
@@ -67,6 +66,44 @@ int readEep(int fd,int devAddr,int regAddr,int num)
     }
 	printf("\n");	
 	return 0;
+}
+int writeEep(int fd,int devAddr,int regAddr,const unsigned char *writeContent, int num)
+{
+	int i = 0,j = 0;
+	int cnt =0;
+    struct i2c_msg  msg;
+    struct i2c_at24_w wd = {0};
+
+
+    struct i2c_rdwr_ioctl_data ioctl_data;
+    struct i2c_msg msgs;
+
+    // 要写入的消息
+    ioctl_data.nmsgs= 1;
+    ioctl_data.msgs= &msgs;
+
+    // 0地址写入8Byte 0x33，AT24C02一次最多能写入8byte
+//	for (i = 0;i<num/4;i++)
+	i = 0;
+	do{
+		if(i==(num+MAXWRITENUMONCE-1)/MAXWRITENUMONCE-1){
+			cnt = num - i*4;
+		}else{
+			cnt = MAXWRITENUMONCE;
+		}
+		for ( j = 0; j < cnt;j++) {
+			wd.wdata[j] = *(writeContent+i*MAXWRITENUMONCE+j);
+		}
+		wd.addr    = regAddr+i*MAXWRITENUMONCE;
+		msgs.addr  = 0x50;
+		msgs.flags = 0;
+		msgs.len   = sizeof(wd.addr)+cnt;
+		msgs.buf   = (unsigned char*)&wd;
+		printf("ioctl write addr %x, return :%d\n",wd.addr ,ioctl(fd, I2C_RDWR, &ioctl_data));
+		usleep(INTERVALOFBLOCKWR);	
+		i++;		
+	}while(i<(num+MAXWRITENUMONCE-1)/MAXWRITENUMONCE);
+
 }
 int closeEep(int fd)
 {
