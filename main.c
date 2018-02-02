@@ -18,7 +18,7 @@ int main(int argc,char **argv)
 		memcpy(writeBuf,*(argv+1),strlen(*(argv+1)));
 		writeEep(fd,DEVADDR,128,writeBuf, strlen(writeBuf));		
 	}
-
+//	memset(readBuf,0,sizeof(readBuf));
 	readEep(fd,DEVADDR,128,64,readBuf);
 	printBuf(readBuf,128,64);
 
